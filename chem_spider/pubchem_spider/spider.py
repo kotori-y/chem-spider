@@ -1,10 +1,14 @@
+import warnings
 from typing import List
 
 import aiohttp
-import warnings
-warnings.filterwarnings("ignore")
 
-from chem_spider.utils import BaseSpider
+try:
+    from ..utils import BaseSpider
+except ImportError:
+    from chem_spider.utils import BaseSpider
+
+warnings.filterwarnings("ignore")
 
 
 def _find_content_by_keywords(data, keyword):
@@ -41,7 +45,7 @@ class PubChemSpider(BaseSpider):
 
             _cid_list = []
             for left in range(0, len(cid_list), 50):
-                _cid_list.append(cid_list[left: left+50])
+                _cid_list.append(cid_list[left: left + 50])
 
             for _cids in _cid_list:
                 cids = ",".join([str(x) for x in _cids])
