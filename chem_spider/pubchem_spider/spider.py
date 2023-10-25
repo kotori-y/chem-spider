@@ -1,4 +1,6 @@
 import warnings
+
+import asyncio
 from typing import List
 
 import aiohttp
@@ -44,8 +46,8 @@ class PubChemSpider(BaseSpider):
             task_list = []
 
             _cid_list = []
-            for left in range(0, len(cid_list), 50):
-                _cid_list.append(cid_list[left: left + 50])
+            for left in range(0, len(cid_list), 100):
+                _cid_list.append(cid_list[left: left + 100])
 
             for _cids in _cid_list:
                 cids = ",".join([str(x) for x in _cids])
@@ -71,7 +73,9 @@ class PubChemSpider(BaseSpider):
         def foobar(value):
             if "Number" in value:
                 return [f"{value['Number'][0]} {value.get('Unit', '')}"]
-            return [x["String"] for x in value["StringWithMarkup"]]
+
+            if "StringWithMarkup" in value:
+                return [x["String"] for x in value["StringWithMarkup"]]
 
         async with aiohttp.ClientSession() as client:
             url = f"https://pubchem.ncbi.nlm.nih.gov/rest/pug_view/data/compound/{cid}/JSON/"
@@ -106,7 +110,6 @@ class PubChemSpider(BaseSpider):
 
 
 if __name__ == "__main__":
-    import asyncio
     import pandas as pd
 
     endpoints = [
@@ -129,7 +132,8 @@ if __name__ == "__main__":
 
     spider = PubChemSpider()
 
-    _cids = list(range(1, 100))
-    ans = asyncio.run(spider.cids_to_properties(_cids + [2244], endpoints), debug=True)
+    _cids = list(range(1, 50))
+    # ans = asyncio.run(spider.cids_to_properties(_cids + [2244], endpoints), debug=True)
+    ans, err = asyncio.run(spider.cids_to_smiles(_cids + [2244]))
     out = pd.DataFrame(ans)
     print(out)
